@@ -73,7 +73,7 @@ class _SignatureScreenState extends State<SignatureScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
         backgroundColor: theme.colorScheme.primary,
@@ -131,8 +131,7 @@ class _SignatureScreenState extends State<SignatureScreen> {
             Expanded(
               flex: 30,
               child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(
-                    16, 10, 16, 8 + MediaQuery.of(context).viewInsets.bottom),
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
