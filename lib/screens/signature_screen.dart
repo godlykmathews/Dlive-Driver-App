@@ -58,7 +58,7 @@ class _SignatureScreenState extends State<SignatureScreen> {
       );
 
       if (!mounted) return;
-      Navigator.of(context).pop(true);
+      await _showSuccess();
     } on ApiException catch (e) {
       setState(() => _error = e.message);
     } catch (e) {
@@ -66,6 +66,83 @@ class _SignatureScreenState extends State<SignatureScreen> {
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+
+  Future<void> _showSuccess() async {
+    // Auto-dismiss after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) Navigator.of(context, rootNavigator: true).pop();
+    });
+
+    await showGeneralDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 300),
+      transitionBuilder: (ctx, anim, _, child) => ScaleTransition(
+        scale: CurvedAnimation(parent: anim, curve: Curves.easeOutBack),
+        child: child,
+      ),
+      pageBuilder: (ctx, a1, a2) => Center(
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 40),
+            padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 32),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 30,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.check_circle_rounded,
+                      size: 52, color: Colors.green.shade600),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Delivered!',
+                  style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  widget.group.customerName,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Signature uploaded successfully',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    if (!mounted) return;
+    // Pop signature screen + group detail, back to home, then refresh
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   @override

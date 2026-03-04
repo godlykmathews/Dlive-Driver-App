@@ -14,7 +14,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late TabController _tabController;
 
   List<RouteInfo> _routes = [];
@@ -25,16 +25,30 @@ class _HomeScreenState extends State<HomeScreen>
   bool _routesLoading = true;
   String? _error;
 
+  final _searchCtrl = TextEditingController();
+  String _searchQuery = '';
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    WidgetsBinding.instance.addObserver(this);
+    _searchCtrl.addListener(() {
+      setState(() => _searchQuery = _searchCtrl.text.trim().toLowerCase());
+    });
     _loadRoutes();
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _loadInvoices();
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _tabController.dispose();
+    _searchCtrl.dispose();
     super.dispose();
   }
 
@@ -89,8 +103,13 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  List<InvoiceGroup> _filtered(String status) =>
-      _groups.where((g) => g.status == status).toList();
+  List<InvoiceGroup> _filtered(String status) {
+    final byStatus = _groups.where((g) => g.status == status);
+    if (_searchQuery.isEmpty) return byStatus.toList();
+    return byStatus
+        .where((g) => g.customerName.toLowerCase().contains(_searchQuery))
+        .toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(104),
+          preferredSize: const Size.fromHeight(148),
           child: Column(
             children: [
               // Route picker
@@ -143,6 +162,42 @@ class _HomeScreenState extends State<HomeScreen>
                         selected: _selectedRoute,
                         onChanged: _onRouteChanged,
                       ),
+              ),
+              // Search bar
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                child: SizedBox(
+                  height: 42,
+                  child: TextField(
+                    controller: _searchCtrl,
+                    style: const TextStyle(color: Colors.white, fontSize: 15),
+                    cursorColor: Colors.white,
+                    decoration: InputDecoration(
+                      hintText: 'Search Shops',
+                      hintStyle: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 15),
+                      prefixIcon: Icon(Icons.search,
+                          color: Colors.white.withValues(alpha: 0.7), size: 20),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: Icon(Icons.close,
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                  size: 18),
+                              onPressed: () => _searchCtrl.clear(),
+                            )
+                          : null,
+                      contentPadding:
+                          const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.15),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
               ),
               // Tabs
               TabBar(

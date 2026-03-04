@@ -65,14 +65,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(
-                    Icons.local_shipping_rounded,
-                    size: 72,
-                    color: theme.colorScheme.primary,
+                  Image.asset(
+                    'images/logo.png',
+                    width: 100,
+                    height: 100,
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Dlive Driver',
+                    'Zedwell',
                     textAlign: TextAlign.center,
                     style: theme.textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
